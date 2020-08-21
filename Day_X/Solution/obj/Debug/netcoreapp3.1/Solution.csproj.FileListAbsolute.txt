@@ -1,0 +1,13 @@
+/home/richard/Projects/Learning/C#/Advent of Code/Day_X/Solution/bin/Debug/netcoreapp3.1/Solution
+/home/richard/Projects/Learning/C#/Advent of Code/Day_X/Solution/bin/Debug/netcoreapp3.1/Solution.deps.json
+/home/richard/Projects/Learning/C#/Advent of Code/Day_X/Solution/bin/Debug/netcoreapp3.1/Solution.runtimeconfig.json
+/home/richard/Projects/Learning/C#/Advent of Code/Day_X/Solution/bin/Debug/netcoreapp3.1/Solution.runtimeconfig.dev.json
+/home/richard/Projects/Learning/C#/Advent of Code/Day_X/Solution/bin/Debug/netcoreapp3.1/Solution.dll
+/home/richard/Projects/Learning/C#/Advent of Code/Day_X/Solution/bin/Debug/netcoreapp3.1/Solution.pdb
+/home/richard/Projects/Learning/C#/Advent of Code/Day_X/Solution/obj/Debug/netcoreapp3.1/Solution.csprojAssemblyReference.cache
+/home/richard/Projects/Learning/C#/Advent of Code/Day_X/Solution/obj/Debug/netcoreapp3.1/Solution.AssemblyInfoInputs.cache
+/home/richard/Projects/Learning/C#/Advent of Code/Day_X/Solution/obj/Debug/netcoreapp3.1/Solution.AssemblyInfo.cs
+/home/richard/Projects/Learning/C#/Advent of Code/Day_X/Solution/obj/Debug/netcoreapp3.1/Solution.csproj.CoreCompileInputs.cache
+/home/richard/Projects/Learning/C#/Advent of Code/Day_X/Solution/obj/Debug/netcoreapp3.1/Solution.dll
+/home/richard/Projects/Learning/C#/Advent of Code/Day_X/Solution/obj/Debug/netcoreapp3.1/Solution.pdb
+/home/richard/Projects/Learning/C#/Advent of Code/Day_X/Solution/obj/Debug/netcoreapp3.1/Solution.genruntimeconfig.cache
