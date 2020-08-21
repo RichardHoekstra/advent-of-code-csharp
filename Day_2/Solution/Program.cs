@@ -8,35 +8,30 @@ namespace Solution
     {
         static void Main(string[] args)
         {
-            var constProgram = System.IO.File.ReadAllText("input.txt");
+            const var constProgram = System.IO.File.ReadAllText("input.txt");
 
             int result = 0;
-            int result_noun = 0;
-            int result_verb = 0;
-            string program = "";    
-            const int _range = 100;
-           
-            for (int noun = 0; noun < _range; noun++)
+            string program = "";
+            int noun = 0;
+            int verb = 0;
+            bool toggle = false;
+            bool notFirstIter = false;
+
+            do
             {
-                for (int verb = 0; verb < _range; verb++)
-                {
-                    // Replace instructions
-                    program = Program.ReplaceInstructions(constProgram, noun, verb); 
-                    // Execute and read the result at instruction 0
-                    result = Int32.Parse(ReadResult(Program.RunIntCode(program)));
-                    if(result == 19690720)
-                    {
-                        result_noun = noun;
-                        result_verb = verb;
-                        break;
+                if(notFirstIter){
+                    if(toggle){
+                        noun += 1;
+                    } else {
+                        verb += 1;
                     }
+                    toggle = !toggle;
                 }
-                if(result == 19690720)
-                {
-                    break;
-                }
-            }
-            Console.WriteLine($"What is 100 * noun + verb? 100 * {result_noun.ToString()} + {result_verb.ToString()} = {100*result_noun+result_verb}");
+                program = Program.ReplaceInstructions(constProgram, noun, verb); 
+                result = ReadResult(program).ToString();
+                notFirstIter = true;
+                Console.WriteLine($"Noun({noun.ToString()}) and Verb({verb.ToString()}) = Result({result})");
+            } while (result != 19690720);
         }
 
         public static string ReplaceInstructions(string program, int noun, int verb)
