@@ -10,37 +10,12 @@ namespace Solution
         static void Main(string[] args)
         {
             string input = System.IO.File.ReadAllText("input.txt");
-            Console.WriteLine($"Closest: {Program.ExampleFunction(input)}");
+            Console.WriteLine($"Least combined steps: {Program.ExampleFunction(input)}");
         }
 
         public static int ExampleFunction(string paths)
         {
-            var inter = Program.PathsIntersections(paths);
-            return Program.IntersectionClosestToCenter(inter);
-        }
-
-        public static int IntersectionClosestToCenter(HashSet<(int, int)> intersections)
-        {   
-            // ALTERNATIVE: Change the intersections to a list of distances to the center 
-            // and just use <List>.Min()
-
-            bool initialized = false;
-            int min_manhattan_distance = 0;
-            foreach (var intersection in intersections)
-            {
-                var manhattan_distance = Math.Abs(intersection.Item1) + Math.Abs(intersection.Item2);
-                if(!initialized){
-                    min_manhattan_distance = manhattan_distance;
-                    initialized = true;
-                } else {
-                    if(manhattan_distance < min_manhattan_distance)
-                    {
-                        min_manhattan_distance = manhattan_distance;
-                    }
-                }
-            }
-
-            return min_manhattan_distance;
+            return LeastSumDistanceIntersection(paths);
         }
 
         public static HashSet<(int, int)> PathsIntersections(string _paths)
@@ -89,6 +64,69 @@ namespace Solution
                 }
             }
             return bitmap;
+        }
+
+        public static int StepsToIntersection(string path, (int, int) intersection)
+        {
+            // NOTE: Not DRY, duplicate code with PathToSet
+            //  I see no simple way to refactor and the time spent
+            //  refactoring will outweigh the amount of times I am going
+            //  to re-use this code.
+
+            int steps = 0;
+            var currLocation = (x: 0, y: 0);
+
+            var vectors = path.Split(",");
+            foreach (var v in vectors)
+            {
+                char direction = v[0];
+                int magnitude = Int32.Parse(v.Substring(1));
+                for (int i = 0; i < magnitude; i++)
+                {
+                    switch (direction)
+                    {
+                        case 'L':
+                            currLocation.x--;
+                            break;
+                        case 'R':
+                            currLocation.x++;
+                            break;
+                        case 'U':
+                            currLocation.y++;
+                            break;
+                        case 'D':
+                            currLocation.y--;
+                            break;
+                        default:
+                            throw new System.InvalidProgramException("Invalid direction.");
+                    }
+                    steps++;
+                    if(currLocation == intersection){
+                        break;
+                    }
+                }
+                if(currLocation == intersection){
+                    break;
+                }
+            }
+            return steps;
+        }
+
+        public static int LeastSumDistanceIntersection(string paths){
+            var intersections = Program.PathsIntersections(paths);
+            var intersection_distances = new List<int>();
+
+            foreach (var intersection in intersections)
+            {
+                int sum_distance = 0;
+                foreach (var path in paths.Split('\n'))
+                {
+                    sum_distance += Program.StepsToIntersection(path, intersection);
+                }                
+                intersection_distances.Add(sum_distance);
+            }
+
+            return intersection_distances.Min();
         }
     }
 }
