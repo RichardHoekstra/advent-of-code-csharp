@@ -29,26 +29,34 @@ namespace Solution
             Memory = program.Split(",");
         }
 
-        public (int, List<ushort>) ReadOpCode(int position=-1)
+        public (OpCode, List<Mode>) ReadOpCode(int position=-1)
         {
             if(position == -1)
             {
                 position = instructionPointer;
             }
 
-            string raw_val = ReadAddress(position);
-            int OPCODE = Int32.Parse(raw_val.Substring(raw_val.Length-2, 2));
-
-            string RAW_MODES = raw_val.Substring(0, raw_val.Length - 2);
-            var MODES = new List<ushort>();
-            if(RAW_MODES.Length > 0)
-            {
-                for (int i = RAW_MODES.Length - 1; i >= 0; i--)
+            string raw_val = ReadAddress(position).ToString();
+            OpCode OPCODE = (OpCode)Int32.Parse(raw_val.Substring(Math.Max(raw_val.Length-2, 0), Math.Min(raw_val.Length, 2)));
+            
+            var MODES = new List<Mode>();
+            if(raw_val.Length > 2){
+                string RAW_MODES = raw_val.Substring(0, raw_val.Length - 2);
+                if(RAW_MODES.Length > 0)
                 {
-                    MODES.Add((ushort)Char.GetNumericValue(RAW_MODES[i]));
+                    for (int i = RAW_MODES.Length - 1; i >= 0; i--)
+                    {
+                        MODES.Add((Mode)Char.GetNumericValue(RAW_MODES[i]));
+                    }
                 }
             }
             return (OPCODE, MODES);          
+        }
+
+        public string MemoryDump()
+        {
+            // Return a correctly formatted IntCode program
+            return String.Join(",", Memory);
         }
 
         private int ReadAddress(int address)
@@ -58,15 +66,10 @@ namespace Solution
 
         private void WriteAddress(int address, int value)
         {
-            Memory[address] == value.ToString();
+            Memory[address] = value.ToString();
         }
 
-        private string ReadAddress(int address)
-        {
-            return Memory[address];
-        }
-
-        private void InsAdd(List<ushort> modes)
+        private void InsAdd(List<Mode> modes)
         {
             // X, Y, Z
             // X and Y can be in position mode or immediate mode
@@ -78,13 +81,13 @@ namespace Solution
             int z = ReadAddress(instructionPointer+3);
 
             // Execute position mode(s), if set.
-            if(modes.Count == 0 || modes[0] == Mode.POSITION)
+            if(modes.Count == 0 || (modes.Count >= 1 && modes[0] == Mode.POSITION))
             {
                 // Read the address and write it back to X
                 x = ReadAddress(x);
             }
 
-            if(modes.Count == 1 || modes[1] == Mode.POSITION)
+            if(modes.Count < 2 || (modes.Count >= 2 && modes[1] == Mode.POSITION))
             {
                 y = ReadAddress(y);
             }
@@ -94,12 +97,12 @@ namespace Solution
 
             // Write to address of Z
             WriteAddress(z, result);
-
+            
             // Increment instruction pointer by the amount of parameters, including the OpCode.
             instructionPointer += 4;
         }
 
-        private void InsMultiply(List<ushort> modes)
+        private void InsMultiply(List<Mode> modes)
         {
             // X, Y, Z
             // X and Y can be in position mode or immediate mode
@@ -110,14 +113,15 @@ namespace Solution
             int y = ReadAddress(instructionPointer+2);
             int z = ReadAddress(instructionPointer+3);
 
+           
             // Execute position mode(s), if set.
-            if(modes.Count == 0 || modes[0] == Mode.POSITION)
+            if(modes.Count == 0 || (modes.Count >= 1 && modes[0] == Mode.POSITION))
             {
                 // Read the address and write it back to X
                 x = ReadAddress(x);
             }
 
-            if(modes.Count == 1 || modes[1] == Mode.POSITION)
+            if(modes.Count < 2 || (modes.Count >= 2 && modes[1] == Mode.POSITION))
             {
                 y = ReadAddress(y);
             }
@@ -132,12 +136,12 @@ namespace Solution
             instructionPointer += 4;
         }
 
-        private void InsConsoleInput(List<ushort> modes)
+        private void InsConsoleInput(List<Mode> modes)
         {
             // TODO
         }
 
-        private void InsConsoleOutput(List<ushort> modes)
+        private void InsConsoleOutput(List<Mode> modes)
         {
             // TOOD
         }
@@ -156,7 +160,7 @@ namespace Solution
                         InsMultiply(MODES);
                         break;
                     case OpCode.CONSOLE_INPUT:
-                        InsConsoleInput();
+                        InsConsoleInput(MODES);
                         break;
                     case OpCode.CONSOLE_OUTPUT:
                         InsConsoleOutput(MODES);
@@ -166,7 +170,7 @@ namespace Solution
                     default:
                         break;
                 }
-                OPCODE = ReadOpCode();
+                (OPCODE, MODES) = ReadOpCode();
             }
         }
     }
@@ -203,6 +207,13 @@ namespace Solution
                 }
             }
             Console.WriteLine($"What is 100 * noun + verb? 100 * {result_noun.ToString()} + {result_verb.ToString()} = {100*result_noun+result_verb}");
+        }
+
+        public static string ExampleFunction(string program)
+        {
+            var computer = new IntcodeComputer(program);
+            computer.Execute();
+            return computer.MemoryDump();
         }
 
         public static string ReplaceInstructions(string program, int noun, int verb)

@@ -14,6 +14,7 @@ namespace Solution.Test
         {
         }
 
+        [Test]
         public void ExampleTest()
         {
             var testCases = new Dictionary<string, string>
@@ -29,8 +30,8 @@ namespace Solution.Test
                 var X = testCase.Key;
                 var Y = testCase.Value;
 
-                var result = Program.RunIntCode(X);
-                //Assert.IsTrue(result==Y, $"Function({X} should return {Y}, function returned {result}");
+                var result = Program.ExampleFunction(X);
+                Assert.IsTrue(result==Y, $"Function({X} should return {Y}, function returned {result}");
             }
         }
 
@@ -39,9 +40,9 @@ namespace Solution.Test
         {
             var computer = new IntcodeComputer("1002,4,3,4,33");
             var (OPCODE, MODES) = computer.ReadOpCode(0);
-            Assert.IsTrue(OPCODE==2);
-            Assert.IsTrue(MODES[0]==0);
-            Assert.IsTrue(MODES[1]==1);
+            Assert.IsTrue(OPCODE==IntcodeComputer.OpCode.MULTIPLY);
+            Assert.IsTrue(MODES[0]==IntcodeComputer.Mode.POSITION);
+            Assert.IsTrue(MODES[1]==IntcodeComputer.Mode.IMMEDIATE);
         }
     }
 }
