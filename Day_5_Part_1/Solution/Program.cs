@@ -4,6 +4,172 @@ using System.Linq;
 
 namespace Solution
 {
+    public class IntcodeComputer
+    {
+        public enum OpCode
+        {
+            ADD = 1,
+            MULTIPLY = 2,
+            CONSOLE_INPUT = 3,
+            CONSOLE_OUTPUT = 4,
+            HALT = 99
+        }
+        
+        public enum Mode 
+        {
+            POSITION = 0, // Read value from address
+            IMMEDIATE = 1 // Read value
+        }
+        public string[] Memory;
+        private int instructionPointer = 0;
+
+        public IntcodeComputer(string program)
+        {
+            // Load program into memory, assumes a comma-seperated IntCode program.
+            Memory = program.Split(",");
+        }
+
+        public (int, List<ushort>) ReadOpCode(int position=-1)
+        {
+            if(position == -1)
+            {
+                position = instructionPointer;
+            }
+
+            string raw_val = ReadAddress(position);
+            int OPCODE = Int32.Parse(raw_val.Substring(raw_val.Length-2, 2));
+
+            string RAW_MODES = raw_val.Substring(0, raw_val.Length - 2);
+            var MODES = new List<ushort>();
+            if(RAW_MODES.Length > 0)
+            {
+                for (int i = RAW_MODES.Length - 1; i >= 0; i--)
+                {
+                    MODES.Add((ushort)Char.GetNumericValue(RAW_MODES[i]));
+                }
+            }
+            return (OPCODE, MODES);          
+        }
+
+        private int ReadAddress(int address)
+        {
+            return Int32.Parse(Memory[address]);
+        }
+
+        private void WriteAddress(int address, int value)
+        {
+            Memory[address] == value.ToString();
+        }
+
+        private string ReadAddress(int address)
+        {
+            return Memory[address];
+        }
+
+        private void InsAdd(List<ushort> modes)
+        {
+            // X, Y, Z
+            // X and Y can be in position mode or immediate mode
+            // Z can only be in position mode
+            // Write X + Y to position Z
+
+            int x = ReadAddress(instructionPointer+1);
+            int y = ReadAddress(instructionPointer+2);
+            int z = ReadAddress(instructionPointer+3);
+
+            // Execute position mode(s), if set.
+            if(modes.Count == 0 || modes[0] == Mode.POSITION)
+            {
+                // Read the address and write it back to X
+                x = ReadAddress(x);
+            }
+
+            if(modes.Count == 1 || modes[1] == Mode.POSITION)
+            {
+                y = ReadAddress(y);
+            }
+
+            // Execute the OPCODE
+            int result = x + y;
+
+            // Write to address of Z
+            WriteAddress(z, result);
+
+            // Increment instruction pointer by the amount of parameters, including the OpCode.
+            instructionPointer += 4;
+        }
+
+        private void InsMultiply(List<ushort> modes)
+        {
+            // X, Y, Z
+            // X and Y can be in position mode or immediate mode
+            // Z can only be in position mode
+            // Write X * Y to position Z
+
+            int x = ReadAddress(instructionPointer+1);
+            int y = ReadAddress(instructionPointer+2);
+            int z = ReadAddress(instructionPointer+3);
+
+            // Execute position mode(s), if set.
+            if(modes.Count == 0 || modes[0] == Mode.POSITION)
+            {
+                // Read the address and write it back to X
+                x = ReadAddress(x);
+            }
+
+            if(modes.Count == 1 || modes[1] == Mode.POSITION)
+            {
+                y = ReadAddress(y);
+            }
+
+            // Execute the OPCODE
+            int result = x * y;
+
+            // Write to address of Z
+            WriteAddress(z, result);
+
+            // Increment instruction pointer by the amount of parameters, including the OpCode.
+            instructionPointer += 4;
+        }
+
+        private void InsConsoleInput(List<ushort> modes)
+        {
+            // TODO
+        }
+
+        private void InsConsoleOutput(List<ushort> modes)
+        {
+            // TOOD
+        }
+        public void Execute()
+        {
+            // Execute the program that is loaded in memory
+            var (OPCODE, MODES) = ReadOpCode();
+            while(OPCODE != OpCode.HALT)
+            {
+                switch(OPCODE)
+                {
+                    case OpCode.ADD:
+                        InsAdd(MODES);
+                        break;
+                    case OpCode.MULTIPLY:
+                        InsMultiply(MODES);
+                        break;
+                    case OpCode.CONSOLE_INPUT:
+                        InsConsoleInput();
+                        break;
+                    case OpCode.CONSOLE_OUTPUT:
+                        InsConsoleOutput(MODES);
+                        break;
+                    case OpCode.HALT:
+                        break;
+                    default:
+                        break;
+                }
+                OPCODE = ReadOpCode();
+            }
+        }
+    }
     public class Program
     {
         static void Main(string[] args)
