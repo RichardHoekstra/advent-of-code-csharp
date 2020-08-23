@@ -4,18 +4,14 @@ using System.Linq;
 
 /*
     PROBLEM STATEMENT:
-        However, they do remember a few key facts about the password:
+        An Elf just remembered one more important detail: the two adjacent matching digits are not part of a larger group of matching digits.
 
-        It is a six-digit number.
-        The value is within the range given in your puzzle input.
-        Two adjacent digits are the same (like 22 in 122345).
-        Going from left to right, the digits never decrease; they only ever increase or stay the same (like 111123 or 135679).
+        Given this additional criterion, but still ignoring the range rule, the following are now true:
 
-        Other than the range rule, the following are true:
+            112233 meets these criteria because the digits never decrease and all repeated digits are exactly two digits long.
+            123444 no longer meets the criteria (the repeated 44 is part of a larger group of 444).
+            111122 meets the criteria (even though 1 is repeated more than twice, it still contains a double 22).
 
-            111111 meets these criteria (double 11, never decreases).
-            223450 does not meet these criteria (decreasing pair of digits 50).
-            123789 does not meet these criteria (no double).
     
     PROBLEM QUESTION:
         How many different passwords within the range given in your puzzle input meet these criteria?
@@ -34,7 +30,7 @@ namespace Solution
             Console.WriteLine($"{min_value}|{max_value}");
 
             int plausiblePasswords = 0;
-            for (int i = min_value+1; i < max_value; i++)
+            for (int i = min_value; i < max_value; i++)
             { 
                 if(Program.PlausiblePassword(i.ToString())){
                     Console.WriteLine(i);
@@ -74,22 +70,46 @@ namespace Solution
                 return false;
             }
             //Console.WriteLine("The value is within the range given in your puzzle input.");
-
-            // Two adjacent digits are the same (like 22 in 122345).
+            
+            // Two adjacent digits are the same but not part of a
+            // larger group of matching digits
             bool hasEqualAdjacentDigits = false;
+            int matchingDigits = 0;
             for (int i = 0; i < password.Length-1; i++)
             {
+                //Console.WriteLine($"{password[i]} == {password[i+1]}");
                 if(password[i] == password[i+1])
                 {
-                    hasEqualAdjacentDigits = true;
+                    matchingDigits++;
+                    hasEqualAdjacentDigits = true;    
+                } else {
+                    // If the digits have changed
+                    // but, we found a double
+                    // break early.
+                    if(matchingDigits == 1){
+                        break;
+                    }
+                    matchingDigits = 0;
                 }
+                
+                // Fail on more than one match because
+                // in the example sequence 3444, 
+                // the produced matches are
+                //  4 == 3
+                //  4 == 4
+                //  4 == 4
+                if(matchingDigits > 1){
+                    hasEqualAdjacentDigits = false;
+                }   
             }
 
             if(!hasEqualAdjacentDigits)
             {
+                //Console.WriteLine($"Rejected on adjacency: {password}");
                 return false;
             }
             //Console.WriteLine("Two adjacent digits are the same.");
+            
 
             // Going from left to right, the digits never decrease; 
             // they only ever increase or stay the same (like 111123 or 135679).

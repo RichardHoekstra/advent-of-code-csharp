@@ -19,9 +19,9 @@ namespace Solution.Test
         {
             var testCases = new Dictionary<string, bool>
             {
-                {"111111", true},
-                {"223450", false},
-                {"123789", false},
+                {"112233", true},
+                {"123444", false},
+                {"111122", true},
             };
             
             foreach (KeyValuePair<string, bool> testCase in testCases)
