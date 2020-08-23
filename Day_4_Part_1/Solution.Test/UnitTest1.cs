@@ -17,19 +17,19 @@ namespace Solution.Test
         [Test]
         public void ExampleTest()
         {
-            var testCases = new Dictionary<int, int>
+            var testCases = new Dictionary<string, bool>
             {
-                {1, 2},
-                {2, 3},
-                {3, 4},
+                {"111111", true},
+                {"223450", false},
+                {"123789", false},
             };
             
-            foreach (KeyValuePair<int, int> testCase in testCases)
+            foreach (KeyValuePair<string, bool> testCase in testCases)
             {
                 var X = testCase.Key;
                 var Y = testCase.Value;
 
-                var result = Program.ExampleFunction(X);
+                var result = Program.PlausiblePassword(X);
                 Assert.IsTrue(result==Y, $"Function({X} should return {Y}, function returned {result}");
             }
         }
