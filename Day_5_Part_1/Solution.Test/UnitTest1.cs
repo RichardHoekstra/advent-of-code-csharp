@@ -29,8 +29,10 @@ namespace Solution.Test
             {
                 var X = testCase.Key;
                 var Y = testCase.Value;
-
-                var result = Program.ExampleFunction(X);
+                
+                var computer = new IntcodeComputer(X);
+                computer.Execute();
+                var result = computer.MemoryDump();
                 Assert.IsTrue(result==Y, $"Function({X} should return {Y}, function returned {result}");
             }
         }
