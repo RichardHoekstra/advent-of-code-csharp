@@ -12,6 +12,10 @@ namespace Solution
             MULTIPLY = 2,
             CONSOLE_INPUT = 3,
             CONSOLE_OUTPUT = 4,
+            JUMP_NOT_ZERO = 5,
+            JUMP_ZERO = 6,
+            COMPARE_LESS_THAN = 7,
+            COMPARE_EQUAL = 8,
             HALT = 99
         }
         
@@ -72,32 +76,28 @@ namespace Solution
 
         private void InsAdd(List<Mode> modes)
         {
-            // X, Y, Z
-            // X and Y can be in position mode or immediate mode
-            // Z can only be in position mode
-            // Write X + Y to position Z
-
-            int x = ReadAddress(instructionPointer+1);
-            int y = ReadAddress(instructionPointer+2);
-            int z = ReadAddress(instructionPointer+3);
+            // Read the parameters (by value)
+            int par1 = ReadAddress(instructionPointer+1);
+            int par2 = ReadAddress(instructionPointer+2);
+            int par3 = ReadAddress(instructionPointer+3);
 
             // Execute position mode(s), if set.
             if(modes.Count == 0 || (modes.Count >= 1 && modes[0] == Mode.POSITION))
             {
                 // Read the address and write it back to X
-                x = ReadAddress(x);
+                par1 = ReadAddress(par1);
             }
 
             if(modes.Count < 2 || (modes.Count >= 2 && modes[1] == Mode.POSITION))
             {
-                y = ReadAddress(y);
+                par2 = ReadAddress(par2);
             }
 
             // Execute the OPCODE
-            int result = x + y;
+            int result = par1 + par2;
 
             // Write to address of Z
-            WriteAddress(z, result);
+            WriteAddress(par3, result);
             
             // Increment instruction pointer by the amount of parameters, including the OpCode.
             instructionPointer += 4;
@@ -105,37 +105,165 @@ namespace Solution
 
         private void InsMultiply(List<Mode> modes)
         {
-            // X, Y, Z
-            // X and Y can be in position mode or immediate mode
-            // Z can only be in position mode
-            // Write X * Y to position Z
-
-            int x = ReadAddress(instructionPointer+1);
-            int y = ReadAddress(instructionPointer+2);
-            int z = ReadAddress(instructionPointer+3);
-
+            // Read the parameters (by value)
+            int par1 = ReadAddress(instructionPointer+1);
+            int par2 = ReadAddress(instructionPointer+2);
+            int par3 = ReadAddress(instructionPointer+3);
            
             // Execute position mode(s), if set.
             if(modes.Count == 0 || (modes.Count >= 1 && modes[0] == Mode.POSITION))
             {
                 // Read the address and write it back to X
-                x = ReadAddress(x);
+                par1 = ReadAddress(par1);
             }
 
             if(modes.Count < 2 || (modes.Count >= 2 && modes[1] == Mode.POSITION))
             {
-                y = ReadAddress(y);
+                par2 = ReadAddress(par2);
             }
 
             // Execute the OPCODE
-            int result = x * y;
+            int result = par1 * par2;
 
             // Write to address of Z
-            WriteAddress(z, result);
+            WriteAddress(par3, result);
 
             // Increment instruction pointer by the amount of parameters, including the OpCode.
             instructionPointer += 4;
         }
+
+        private void InsJumpNotZero(List<Mode> modes)
+        {
+            // If the first parameter is non-zero, it sets the instruction pointer to the value 
+            // from the second parameter. Otherwise, it does nothing.
+            
+            // Read parameters (by value)
+            int par1 = ReadAddress(instructionPointer+1);
+            int par2 = ReadAddress(instructionPointer+2);
+
+            // Execute position mode(s), if set.
+            if(modes.Count == 0 || (modes.Count >= 1 && modes[0] == Mode.POSITION))
+            {
+                // Read the address and write it back to X
+                par1 = ReadAddress(par1);
+            }
+
+            if(modes.Count < 2 || (modes.Count >= 2 && modes[1] == Mode.POSITION))
+            {
+                par2 = ReadAddress(par2);
+            }
+
+            // Execute the OPCODE
+            if(par1 != 0)
+            {
+                // Jump to the value from the second parameter
+                instructionPointer = par2;
+            } else {
+                // Step to the next instruction
+                instructionPointer += 2;
+            }
+        }
+
+        private void InsJumpZero(List<Mode> modes)
+        {
+            // If the first parameter is zero, it sets the instruction pointer to the value 
+            // from the second parameter. Otherwise, it does nothing.
+
+            // Read parameters (by value)
+            int par1 = ReadAddress(instructionPointer+1);
+            int par2 = ReadAddress(instructionPointer+2);
+
+            // Execute position mode(s), if set.
+            if(modes.Count == 0 || (modes.Count >= 1 && modes[0] == Mode.POSITION))
+            {
+                // Read the address and write it back to X
+                par1 = ReadAddress(par1);
+            }
+
+            if(modes.Count < 2 || (modes.Count >= 2 && modes[1] == Mode.POSITION))
+            {
+                par2 = ReadAddress(par2);
+            }
+
+            // Execute the OPCODE
+            if(par1 == 0)
+            {
+                // Jump to the value from the second parameter
+                instructionPointer = par2;
+            } else {
+                // Step to the next instruction
+                instructionPointer += 2;
+            }
+        }
+
+        private void InsCmpLessThan(List<Mode> modes)
+        {
+            // If the first parameter is less than the second parameter, 
+            // it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
+
+            // Read parameters (by value)
+            int par1 = ReadAddress(instructionPointer+1);
+            int par2 = ReadAddress(instructionPointer+2);
+            int par3 = ReadAddress(instructionPointer+2);
+
+            // Execute position mode(s), if set.
+            if(modes.Count == 0 || (modes.Count >= 1 && modes[0] == Mode.POSITION))
+            {
+                // Read the address and write it back to X
+                par1 = ReadAddress(par1);
+            }
+
+            if(modes.Count < 2 || (modes.Count >= 2 && modes[1] == Mode.POSITION))
+            {
+                par2 = ReadAddress(par2);
+            }
+
+            if(modes.Count < 3 || (modes.Count >= 3 && modes[2] == Mode.POSITION))
+            {
+                par3 = ReadAddress(par3);
+            }
+
+            // Execute the OPCODE
+            WriteAddress(par3, (par1 < par2) ? 1 : 0);
+
+            // Step to the next instruction
+            instructionPointer += 4;
+        }
+
+        private void InsCmpEqual(List<Mode> modes)
+        {
+            // If the first parameter is equal to the second parameter, 
+            // it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
+
+            // Read parameters (by value)
+            int par1 = ReadAddress(instructionPointer+1);
+            int par2 = ReadAddress(instructionPointer+2);
+            int par3 = ReadAddress(instructionPointer+2);
+
+            // Execute position mode(s), if set.
+            if(modes.Count == 0 || (modes.Count >= 1 && modes[0] == Mode.POSITION))
+            {
+                // Read the address and write it back to X
+                par1 = ReadAddress(par1);
+            }
+
+            if(modes.Count < 2 || (modes.Count >= 2 && modes[1] == Mode.POSITION))
+            {
+                par2 = ReadAddress(par2);
+            }
+
+            if(modes.Count < 3 || (modes.Count >= 3 && modes[2] == Mode.POSITION))
+            {
+                par3 = ReadAddress(par3);
+            }
+
+            // Execute the OPCODE
+            WriteAddress(par3, (par1 == par2) ? 1 : 0);
+
+            // Step to the next instruction
+            instructionPointer += 4;
+        }
+
 
         private void InsConsoleInput()
         {
@@ -171,6 +299,7 @@ namespace Solution
             // Increment instruction pointer by the amount of parameters, including the OpCode.
             instructionPointer += 2;
         }
+
         public void Execute()
         {
             // Execute the program that is loaded in memory

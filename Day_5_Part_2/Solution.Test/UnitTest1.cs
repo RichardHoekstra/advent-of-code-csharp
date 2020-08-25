@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.IO;
+using System;
 
 using NUnit.Framework;
 
@@ -9,9 +11,28 @@ namespace Solution.Test
 {
     public class Tests
     {
+        private StringWriter _sw;
+        private StringReader _sr;
+
+
         [SetUp]
         public void Setup()
         {
+            // Take control of cin/cout for the purpose of
+            // unit testing
+            _sw = new StringWriter();
+            Console.SetOut(_sw);
+            _sr = new StringReader("100");
+            Console.SetIn(_sr);
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            var standardOut = new StreamWriter(Console.OpenStandardOutput());
+            standardOut.AutoFlush = true;
+            Console.SetOut(standardOut);
+            Console.SetIn(new StreamReader(Console.OpenStandardInput()));
         }
 
         [Test]
