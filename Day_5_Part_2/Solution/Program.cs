@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+
 namespace Solution
 {
     public class IntcodeComputer
@@ -27,10 +28,18 @@ namespace Solution
         public string[] Memory;
         private int instructionPointer = 0;
 
-        public IntcodeComputer(string program)
+        public bool TestMode = false;
+        public int TestInput;
+        public int TestOutput;
+
+        public IntcodeComputer(string program, bool testMode=false)
         {
             // Load program into memory, assumes a comma-seperated IntCode program.
             Memory = program.Split(",");
+            Console.WriteLine($"Memory at boot: {MemoryDump()}");
+
+            // Set the testing mode flag
+            TestMode = testMode;
         }
 
         public (OpCode, List<Mode>) ReadOpCode(int position=-1)
@@ -65,6 +74,8 @@ namespace Solution
 
         private int ReadAddress(int address)
         {   
+            if(address > Memory.Count() - 1)
+                throw new IndexOutOfRangeException($"Tried reading an out-of-bounds address. Address: {address} Memory: {MemoryDump()}");
             return Int32.Parse(Memory[address]);
         }
 
@@ -160,7 +171,7 @@ namespace Solution
                 instructionPointer = par2;
             } else {
                 // Step to the next instruction
-                instructionPointer += 2;
+                instructionPointer += 3;
             }
         }
 
@@ -185,6 +196,8 @@ namespace Solution
                 par2 = ReadAddress(par2);
             }
 
+            Console.WriteLine($"Par1: {par1} Par2: {par2}");
+
             // Execute the OPCODE
             if(par1 == 0)
             {
@@ -192,7 +205,7 @@ namespace Solution
                 instructionPointer = par2;
             } else {
                 // Step to the next instruction
-                instructionPointer += 2;
+                instructionPointer += 3;
             }
         }
 
@@ -204,7 +217,7 @@ namespace Solution
             // Read parameters (by value)
             int par1 = ReadAddress(instructionPointer+1);
             int par2 = ReadAddress(instructionPointer+2);
-            int par3 = ReadAddress(instructionPointer+2);
+            int par3 = ReadAddress(instructionPointer+3);
 
             // Execute position mode(s), if set.
             if(modes.Count == 0 || (modes.Count >= 1 && modes[0] == Mode.POSITION))
@@ -218,10 +231,12 @@ namespace Solution
                 par2 = ReadAddress(par2);
             }
 
+            /*
             if(modes.Count < 3 || (modes.Count >= 3 && modes[2] == Mode.POSITION))
             {
                 par3 = ReadAddress(par3);
             }
+            */ 
 
             // Execute the OPCODE
             WriteAddress(par3, (par1 < par2) ? 1 : 0);
@@ -238,7 +253,9 @@ namespace Solution
             // Read parameters (by value)
             int par1 = ReadAddress(instructionPointer+1);
             int par2 = ReadAddress(instructionPointer+2);
-            int par3 = ReadAddress(instructionPointer+2);
+            int par3 = ReadAddress(instructionPointer+3);
+
+            Console.WriteLine($"Par1: {par1} Par2: {par2} Par3: {par3}");
 
             // Execute position mode(s), if set.
             if(modes.Count == 0 || (modes.Count >= 1 && modes[0] == Mode.POSITION))
@@ -252,10 +269,13 @@ namespace Solution
                 par2 = ReadAddress(par2);
             }
 
+            /*
             if(modes.Count < 3 || (modes.Count >= 3 && modes[2] == Mode.POSITION))
             {
                 par3 = ReadAddress(par3);
-            }
+            }*/
+
+            Console.WriteLine($"Par1: {par1} Par2: {par2} Par3: {par3}");
 
             // Execute the OPCODE
             WriteAddress(par3, (par1 == par2) ? 1 : 0);
@@ -268,9 +288,15 @@ namespace Solution
         private void InsConsoleInput()
         {
             // Opcode 3 takes a single integer as input and saves it to the position given by its only parameter.
-            // Get user input
-            Console.Write("CONSOLE INPUT | ENTER AN INTEGER VALUE: ");
-            string input = Console.ReadLine();
+
+            string input; 
+            if(TestMode)
+            {
+                input = TestInput.ToString();
+            } else {
+                Console.Write("CONSOLE INPUT | ENTER AN INTEGER VALUE: ");
+                input = Console.ReadLine();
+            }
 
             // Get the value of the first (and only) parameter
             int x = ReadAddress(instructionPointer+1);
@@ -285,6 +311,7 @@ namespace Solution
         private void InsConsoleOutput(List<Mode> modes)
         {
             // Opcode 4 outputs the value of its only parameter.
+
             int x = ReadAddress(instructionPointer+1);
 
             // Execute position mode(s), if set.
@@ -294,7 +321,12 @@ namespace Solution
                 x = ReadAddress(x);
             }
 
-            Console.WriteLine("CONSOLE OUTPUT: " + x.ToString());
+            if(TestMode)
+            {
+                TestOutput = x;
+            } else {
+                Console.WriteLine("CONSOLE OUTPUT: " + x.ToString());
+            }
             
             // Increment instruction pointer by the amount of parameters, including the OpCode.
             instructionPointer += 2;
@@ -304,9 +336,16 @@ namespace Solution
         {
             // Execute the program that is loaded in memory
             var (OPCODE, MODES) = ReadOpCode();
-            while(OPCODE != OpCode.HALT)
+            bool HALT = false;
+            while(OPCODE != OpCode.HALT && !HALT)
             {
-                // Console.WriteLine($"{OPCODE}");
+                string strMODES = "";
+                foreach (var item in MODES)
+                {
+                    strMODES += item + " ";
+                }
+                Console.WriteLine($"OpCode: {OPCODE}    Modes: {strMODES}");
+                Console.WriteLine($"IP: {instructionPointer}    Memory: {MemoryDump()}");
                 switch(OPCODE)
                 {
                     case OpCode.ADD:
@@ -321,10 +360,23 @@ namespace Solution
                     case OpCode.CONSOLE_OUTPUT:
                         InsConsoleOutput(MODES);
                         break;
+                    case OpCode.JUMP_NOT_ZERO:
+                        InsJumpNotZero(MODES);
+                        break;
+                    case OpCode.JUMP_ZERO:
+                        InsJumpZero(MODES);
+                        break;
+                    case OpCode.COMPARE_LESS_THAN:
+                        InsCmpLessThan(MODES);
+                        break;
+                    case OpCode.COMPARE_EQUAL:
+                        InsCmpEqual(MODES);
+                        break;
                     case OpCode.HALT:
+                        HALT = true;
                         break;
                     default:
-                        break;
+                        throw new NotImplementedException($"Tried to execute an OpCode that is not implemented. OpCode: {OPCODE} Memory dump: {MemoryDump()} Instruction Pointer: {instructionPointer}");
                 }
                 (OPCODE, MODES) = ReadOpCode();
             }
