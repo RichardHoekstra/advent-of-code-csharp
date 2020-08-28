@@ -70,7 +70,7 @@ namespace Solution
             {
                 AddNode(new Node(satelliteId, nodes[centerId]));
             }
-
+            nodes[satelliteId].parent = nodes[centerId];
             nodes[centerId].children.Add(nodes[satelliteId]);
         }
         public List<Node> FlattenBFS()
@@ -113,6 +113,35 @@ namespace Solution
             }
             return visited;
         }
+
+        public List<Node> GetParents(Node parent, List<Node> parents = null)
+        {
+            if (parents == null)
+            {
+                parents = new List<Node>();
+            }
+            if (parent != null)
+            {
+                parents.Add(parent);
+                GetParents(parent.parent, parents);
+            }
+            return parents;
+        }
+
+        public int MinOrbitalTransfers(Node srcNode, Node desNode)
+        {
+            // Find the COMMON node with the biggest depth between SOURCE and DESTINATION nodes.
+            // The minimum amount of transfers is:
+            //      TRANSFERS = DESTINATION.DEPTH - 1 - COMMON.DEPTH + SOURCE.DEPTH - 1 - COMMON.DEPTH
+            //      TRANSFERS = DESTINATION.DEPTH-1 + SOURCE.DEPTH-1 - 2*COMMON.DEPTH
+            List<Node> srcParents = GetParents(srcNode);
+            List<Node> desParents = GetParents(desNode);
+            List<Node> commonParents = srcParents.Intersect(desParents).ToList();
+            Node commNode = srcParents.Intersect(desParents).OrderByDescending(item => item.depth).First();
+
+            Console.WriteLine($"DES: {desNode.depth} SRC: {srcNode.depth} COMM: {commNode.depth}");
+            return desNode.depth - 1 + srcNode.depth - 1 - 2 * commNode.depth;
+        }
     }
 
 
@@ -132,16 +161,17 @@ namespace Solution
                 string center_id = objects[0];
                 string satellite_id = objects[1];
                 orbitTree.AddRelation(center_id, satellite_id);
-
             }
+            orbitTree.FlattenDFAndSetDepth(orbitTree.GetNode("COM"));
+            Console.WriteLine(orbitTree.MinOrbitalTransfers(orbitTree.GetNode("YOU"), orbitTree.GetNode("SAN")));
 
-            int sum = 0;
-            foreach (var node in orbitTree.FlattenDFAndSetDepth(orbitTree.root))
-            {
-                sum += node.depth;
-                Console.WriteLine($"id: {node.id} depth: {node.depth}");
-            }
-            Console.WriteLine(sum);
+            // int sum = 0;
+            // foreach (var node in orbitTree.FlattenDFAndSetDepth(orbitTree.root))
+            // {
+            //     sum += node.depth;
+            //     Console.WriteLine($"id: {node.id} depth: {node.depth}");
+            // }
+            // Console.WriteLine(sum);
         }
 
         public static int ExampleFunction(string map)
