@@ -17,11 +17,10 @@ namespace Solution.Test
         [Test]
         public void ExampleTest()
         {
-            string map = "COM)B\nB)C\nC)D\nD)E\nE)F\nB)G\nG)H\nD)I\nE)J\nJ)K\nK)L";
-            int checksum = 42;
+            string map = "COM)B\nB)C\nC)D\nD)E\nE)F\nB)G\nG)H\nD)I\nE)J\nJ)K\nK)L\nK)YOU\nI)SAN";
+            int orbitalTransfers = 4;
             var result = Program.ExampleFunction(map);
-            Assert.IsTrue(result == checksum, $"Function({map} should return {checksum}, function returned {result}");
-
+            Assert.IsTrue(result == orbitalTransfers, $"Function({map} should return {orbitalTransfers}, function returned {result}");
         }
     }
 }

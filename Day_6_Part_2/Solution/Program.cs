@@ -176,7 +176,18 @@ namespace Solution
 
         public static int ExampleFunction(string map)
         {
-            return 0;
+            Tree orbitTree = new Tree();
+
+            string[] orbits = map.Split("\n");
+            foreach (string orbit in orbits)
+            {
+                string[] objects = orbit.Split(")");
+                string center_id = objects[0];
+                string satellite_id = objects[1];
+                orbitTree.AddRelation(center_id, satellite_id);
+            }
+            orbitTree.FlattenDFAndSetDepth(orbitTree.GetNode("COM"));
+            return orbitTree.MinOrbitalTransfers(orbitTree.GetNode("YOU"), orbitTree.GetNode("SAN"));
         }
     }
 }
