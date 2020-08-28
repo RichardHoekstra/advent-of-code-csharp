@@ -17,21 +17,11 @@ namespace Solution.Test
         [Test]
         public void ExampleTest()
         {
-            var testCases = new Dictionary<int, int>
-            {
-                {1, 2},
-                {2, 3},
-                {3, 4},
-            };
-            
-            foreach (KeyValuePair<int, int> testCase in testCases)
-            {
-                var X = testCase.Key;
-                var Y = testCase.Value;
+            string map = "COM)B\nB)C\nC)D\nD)E\nE)F\nB)G\nG)H\nD)I\nE)J\nJ)K\nK)L";
+            int checksum = 42;
+            var result = Program.ExampleFunction(map);
+            Assert.IsTrue(result == checksum, $"Function({map} should return {checksum}, function returned {result}");
 
-                var result = Program.ExampleFunction(X);
-                Assert.IsTrue(result==Y, $"Function({X} should return {Y}, function returned {result}");
-            }
         }
     }
 }
